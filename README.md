@@ -20,7 +20,6 @@
 - [Install GoCheckAll](#-install-gocheckall)
 - [How to Use](#-how-to-use)
 - [Understanding the Output](#-understanding-the-output)
-- [VS Code Task Integration](#-vs-code-task-integration)
 - [Common Errors & Fixes](#-common-errors--fixes)
 - [Related Tools & Resources](#-related-tools--resources)
 - [FAQ](#-faq)
@@ -34,14 +33,9 @@
 
 ### Why GoCheckAll?
 
-When working with multiple small Go projects (DLL libraries, CLI tools, demos...), manually running `go vet ./...` in each folder is slow and tedious. GoCheckAll scans everything with a **single command**.
+When working with multiple small Go projects (DLL libraries, CLI tools, demos...), manually running `go vet ./...` in each folder is slow and tedious. GoCheckAll scans everything with a **single shortcut** inside VS Code.
 
-```bash
-GoCheckAll.exe D:\GoProjects
-```
-
-That's it. All projects checked. Report generated.  
-Log file opens automatically if errors are found.
+Press `Ctrl+Shift+B` → all projects checked → errors reported instantly.
 
 ---
 
@@ -104,17 +98,19 @@ Go automatically adds itself to your system `PATH`.
 
 ### Step 3 — Verify installation
 
-Open **Command Prompt** or **PowerShell**:
+Open **Command Prompt** (`Win+R` → type `cmd` → Enter):
 
 ```bash
 go version
-# Expected output: go version go1.xx.x windows/amd64
+# Expected: go version go1.xx.x windows/amd64
 
 go env GOPATH
 # Usually: C:\Users\YourName\go
 ```
 
 ### Step 4 — Install staticcheck *(recommended)*
+
+In Command Prompt, run:
 
 ```bash
 go install honnef.co/go/tools/cmd/staticcheck@latest
@@ -125,23 +121,23 @@ GoCheckAll finds it automatically — no extra config needed.
 
 ### Step 5 — Install GCC *(only for CGo / DLL projects)*
 
+> 💡 **Skip this step if your projects are pure Go** (no CGo, no DLL).
+
 Download **MSYS2**: **https://www.msys2.org/**
 
-After installing, open the **MSYS2 UCRT64 terminal** and run:
+After installing, open the **MSYS2 UCRT64** terminal and run:
 
 ```bash
-# GCC 64-bit (amd64 builds)
+# GCC 64-bit (for amd64 builds)
 pacman -S mingw-w64-ucrt-x86_64-gcc
 
-# GCC 32-bit (386 builds)
+# GCC 32-bit (for 386 builds)
 pacman -S mingw-w64-i686-gcc
 ```
 
 GoCheckAll looks for GCC at these default paths:
 - 64-bit: `C:\msys64\ucrt64\bin`
 - 32-bit: `C:\msys64\mingw32\bin`
-
-> 💡 **Pure Go projects do not need GCC.**
 
 ---
 
@@ -155,20 +151,15 @@ GoCheckAll looks for GCC at these default paths:
 
 `Ctrl+Shift+X` → search **"Go"** → install by **Go Team at Google**
 
-Or from terminal:
-```bash
-code --install-extension golang.go
-```
-
-### Step 3 — Install Go tools
+### Step 3 — Install Go tools inside VS Code
 
 `Ctrl+Shift+P` → type `Go: Install/Update Tools` → select all → OK
 
 VS Code installs: `gopls`, `dlv`, `staticcheck`, `goimports`, and more.
 
-### Step 4 — Recommended settings
+### Step 4 — Recommended workspace settings
 
-Create `.vscode/settings.json` in your workspace:
+Create `.vscode\settings.json` in your workspace folder:
 
 ```json
 {
@@ -186,171 +177,58 @@ Create `.vscode/settings.json` in your workspace:
 
 ## 📦 Install GoCheckAll
 
-### Download
-
-1. Go to the **[Releases](../../releases)** page
+1. Go to the **[Releases](../../releases)** page of this repo
 2. Download `GoCheckAll.exe`
-3. No installer needed — just place the `.exe` where you want it
-
-### Recommended folder structure
-
-Place `GoCheckAll.exe` inside `.vscode\` of your workspace so VS Code tasks can reach it:
+3. Copy it into the `.vscode\` folder of your workspace
 
 ```
 MyWorkspace\
 ├── 📂 .vscode\
-│   ├── ⚙️  GoCheckAll.exe    ← place here
-│   └── 📄 tasks.json
-│
+│   └── ⚙️  GoCheckAll.exe   ← paste here
 ├── 📂 project-one\
-│   ├── 📄 go.mod
-│   └── 📄 main.go
-│
-├── 📂 project-two\
-│   ├── 📄 go.mod
-│   └── 📄 main.go
-│
-└── 📂 project-three\
-    ├── 📄 go.mod
-    └── 📄 main.go
+│   └── 📄 go.mod
+└── 📂 project-two\
+    └── 📄 go.mod
 ```
 
-Run once → all three projects checked simultaneously.
+No installer needed. That's all. ✅
 
 ---
 
 ## 🚀 How to Use
 
-### Syntax
-
-```
-GoCheckAll.exe [directory] [max_threads]
-```
-
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `directory` | Root folder to scan for Go projects | Auto-detected from EXE location |
-| `max_threads` | Max number of parallel checks | `4` |
-
-### Examples
-
-```bash
-# Auto-detect: walks up parent folders from EXE to find go.mod files
-GoCheckAll.exe
-
-# Check all Go projects inside a specific directory
-GoCheckAll.exe D:\GoProjects
-
-# Same, but only 2 threads (good for slower machines)
-GoCheckAll.exe D:\GoProjects 2
-
-# Large workspace — use 8 threads
-GoCheckAll.exe D:\Up_Github_Developer 8
-
-# Check just one project
-GoCheckAll.exe D:\GoProjects\myproject 1
-```
-
-### What happens step by step
-
-```
-① Scans the target directory for sub-folders containing go.mod
-② Starts one check thread per project (up to max_threads limit)
-③ Each thread runs 8 checks in sequence:
-     1. go.mod exists?
-     2. Package declarations valid?
-     3. Duplicate function names?
-     4. Duplicate //export names?
-     5. go vet ./...
-     6. staticcheck ./... (if installed)
-     7. go build (amd64)
-     8. go build (386)
-④ Waits for all threads to finish
-⑤ Prints summary — FAIL projects first, OK projects after
-⑥ If any project failed → opens detailed log file automatically
-```
+GoCheckAll has **two ways** to run — pick whichever fits you:
 
 ---
 
-## 📊 Understanding the Output
+### 🟢 Way 1 — VS Code Task *(recommended for beginners)*
 
-### Log prefix legend
+This is the easiest way. You press one shortcut and GoCheckAll runs automatically on **all your projects at once**.
 
-| Prefix | Meaning |
-|--------|---------|
-| `[INFO]` | General information |
-| `[OK]  ` | ✅ Check passed |
-| `[WARN]` | ⚠️ Warning — execution continues |
-| `[FAIL]` | ❌ Error — needs to be fixed |
+#### Step 1 — Set up your workspace folder
 
-### Example — everything OK
+Open the **parent folder** that contains all your Go projects in VS Code:
 
 ```
-=== GO MULTI PROJECT CHECKER ===
-Root    : D:\GoProjects
-go.exe  : C:\Program Files\Go\bin\go.exe
-Threads : 4
+✅ Open this →  D:\MyWorkspace\
+                 ├── project-one\   (has go.mod)
+                 ├── project-two\   (has go.mod)
+                 └── project-three\ (has go.mod)
 
-Tim thay: 3 project(s)
-  [1] myapi    (D:\GoProjects\myapi)
-  [2] mylib    (D:\GoProjects\mylib)
-  [3] mytool   (D:\GoProjects\mytool)
-
-Bat dau kiem tra song song...
-
-=====================================
-         BAO CAO TONG HOP
-=====================================
-
-[OK]   myapi    (1.2s)
-[OK]   mylib    (890ms)
-[OK]   mytool   (1.1s)
-
-=====================================
-OK  : 3  |  FAIL: 0  |  Tong: 3
-KET QUA: TAT CA OK
-=====================================
+❌ Not this →   D:\MyWorkspace\project-one\
+                 (only checks one project)
 ```
 
-### Example — project has errors
+#### Step 2 — Create `.vscode\tasks.json`
 
-```
-=====================================
-         BAO CAO TONG HOP
-=====================================
-
-[FAIL] mylib  (450ms)
-       [FAIL] Trung ham "Init" trong config.go (lan dau thay o: main.go)
-       [FAIL] Exit code 1
-       b.go:3:8: missing go.sum entry; run: go mod tidy
-
-[OK]   myapi    (1.1s)
-[OK]   mytool   (980ms)
-
-=====================================
-OK  : 2  |  FAIL: 1  |  Tong: 3
-KET QUA: CO 1 PROJECT LOI
-=====================================
-
-Log chi tiet: C:\Users\You\AppData\Local\Temp\GoMultiProject.log
-```
-
-The detailed log opens automatically in your default text editor.
-
----
-
-## 🔌 VS Code Task Integration
-
-Run GoCheckAll with `Ctrl+Shift+B` by adding it as a VS Code build task.
-
-Create `.vscode/tasks.json`:
+Inside your workspace, create the file `.vscode\tasks.json` with this content:
 
 ```json
 {
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "🔍 GoCheckAll — Check all projects",
+            "label": "GoCheckAll — Check all projects",
             "type": "shell",
             "command": "chcp 65001 && ${workspaceFolder}\\.vscode\\GoCheckAll.exe",
             "group": {
@@ -366,7 +244,7 @@ Create `.vscode/tasks.json`:
             "problemMatcher": []
         },
         {
-            "label": "🔍 GoCheckAll — Check current folder only",
+            "label": "GoCheckAll — Check current folder only",
             "type": "shell",
             "command": "chcp 65001 && ${workspaceFolder}\\.vscode\\GoCheckAll.exe ${workspaceFolder} 1",
             "group": "build",
@@ -398,10 +276,136 @@ Create `.vscode/tasks.json`:
 }
 ```
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+Shift+B` | Run default task (GoCheckAll — all projects) |
+#### Step 3 — Your final folder structure
+
+```
+MyWorkspace\
+├── 📂 .vscode\
+│   ├── ⚙️  GoCheckAll.exe        ← the tool
+│   ├── 📄 tasks.json             ← the shortcut config
+│   └── 📄 settings.json          ← VS Code settings (optional)
+│
+├── 📂 project-one\
+│   ├── 📄 go.mod
+│   └── 📄 main.go
+│
+├── 📂 project-two\
+│   ├── 📄 go.mod
+│   └── 📄 main.go
+│
+└── 📂 project-three\
+    ├── 📄 go.mod
+    └── 📄 main.go
+```
+
+#### Step 4 — Run it
+
+Press **`Ctrl+Shift+B`** inside VS Code.
+
+The Terminal panel opens at the bottom and GoCheckAll checks all your projects simultaneously. ✅
+
+| Shortcut | What it does |
+|----------|-------------|
+| `Ctrl+Shift+B` | Run default task (check all projects) |
 | `Ctrl+Shift+P` → `Tasks: Run Task` | Pick any task from the list |
+
+> 💡 **Tip:** If VS Code asks *"No build task found"*, make sure:
+> - You opened the **workspace root folder** (the one containing `.vscode\`)
+> - `tasks.json` is saved inside `.vscode\`
+
+---
+
+### 🔵 Way 2 — Command Prompt *(for advanced users)*
+
+If you are comfortable with the terminal, open **Command Prompt** (`Win+R` → `cmd` → Enter):
+
+```bash
+# Check all Go projects inside a folder
+GoCheckAll.exe D:\GoProjects
+
+# Check with fewer threads (good for slower machines)
+GoCheckAll.exe D:\GoProjects 2
+
+# Check just one specific project
+GoCheckAll.exe D:\GoProjects\myproject 1
+
+# Large workspace — use 8 threads
+GoCheckAll.exe D:\Up_Github_Developer 8
+```
+
+Or navigate to your workspace first:
+
+```bash
+cd D:\MyWorkspace
+.vscode\GoCheckAll.exe
+```
+
+---
+
+## 📊 Understanding the Output
+
+### Log prefix legend
+
+| Prefix | Meaning |
+|--------|---------|
+| `[INFO]` | General information |
+| `[OK]  ` | ✅ Check passed |
+| `[WARN]` | ⚠️ Warning — execution continues |
+| `[FAIL]` | ❌ Error — needs to be fixed |
+
+### Example — everything OK
+
+```
+=== GO MULTI PROJECT CHECKER ===
+Root    : D:\MyWorkspace
+go.exe  : C:\Program Files\Go\bin\go.exe
+Threads : 4
+
+Tim thay: 3 project(s)
+  [1] project-one    (D:\MyWorkspace\project-one)
+  [2] project-two    (D:\MyWorkspace\project-two)
+  [3] project-three  (D:\MyWorkspace\project-three)
+
+Bat dau kiem tra song song...
+
+=====================================
+         BAO CAO TONG HOP
+=====================================
+
+[OK]   project-one    (1.2s)
+[OK]   project-two    (890ms)
+[OK]   project-three  (1.1s)
+
+=====================================
+OK  : 3  |  FAIL: 0  |  Tong: 3
+KET QUA: TAT CA OK
+=====================================
+```
+
+### Example — project has errors
+
+```
+=====================================
+         BAO CAO TONG HOP
+=====================================
+
+[FAIL] project-two  (450ms)
+       [FAIL] Trung ham "Init" trong config.go (lan dau thay o: main.go)
+       [FAIL] Exit code 1
+       b.go:3:8: missing go.sum entry; run: go mod tidy
+
+[OK]   project-one    (1.1s)
+[OK]   project-three  (980ms)
+
+=====================================
+OK  : 2  |  FAIL: 1  |  Tong: 3
+KET QUA: CO 1 PROJECT LOI
+=====================================
+
+Log chi tiet: C:\Users\You\AppData\Local\Temp\GoMultiProject.log
+```
+
+The detailed log file opens automatically in your default text editor.
 
 ---
 
@@ -436,9 +440,9 @@ missing go.sum entry for go.mod file; to add it:
 go mod download github.com/xxx/yyy
 ```
 
-**Fix:**
+**Fix:** Open Command Prompt in your project folder and run:
+
 ```bash
-cd your-project-folder
 go mod tidy
 ```
 
@@ -450,7 +454,8 @@ go mod tidy
 found packages main (a.go) and mypkg (b.go) in D:\...
 ```
 
-**Cause:** Go does not allow two different packages in the same directory (exception: `_test` suffix).  
+**Cause:** Go does not allow two different packages in the same directory  
+(exception: files ending with `_test.go`).  
 **Fix:** Move one package's files into a subdirectory.
 
 ---
@@ -461,7 +466,8 @@ found packages main (a.go) and mypkg (b.go) in D:\...
 [WARN] Khong tim thay staticcheck.exe
 ```
 
-**Fix:**
+**Fix:** Open Command Prompt and run:
+
 ```bash
 go install honnef.co/go/tools/cmd/staticcheck@latest
 ```
@@ -474,7 +480,23 @@ go install honnef.co/go/tools/cmd/staticcheck@latest
 [FAIL] gcc: error ...
 ```
 
-**Fix:** Install MSYS2 + GCC → see [Install Go → Step 5](#step-5--install-gcc-only-for-cgo--dll-projects).
+**Fix:** Install MSYS2 + GCC — see [Install Go → Step 5](#step-5--install-gcc-only-for-cgo--dll-projects).
+
+---
+
+### 🔍 GoCheckAll found 0 projects
+
+```
+[WARN] Khong tim thay project Go nao trong: D:\...
+```
+
+**Cause:** The folder you opened does not have sub-folders containing `go.mod`.  
+**Fix:** Make sure you opened the **parent folder** in VS Code, not a project sub-folder.
+
+```
+✅ Correct:  Open D:\MyWorkspace\          → contains project-one\, project-two\
+❌ Wrong:    Open D:\MyWorkspace\project-one\  → GoCheckAll finds nothing above it
+```
 
 ---
 
@@ -535,9 +557,10 @@ go install honnef.co/go/tools/cmd/staticcheck@latest
 
 > Not currently. It is a Windows-only `.exe`. The Go tools it invokes (`go vet`, `staticcheck`) are cross-platform, but the GoCheckAll launcher itself requires Windows.
 
-**Q: Do I need GCC to use GoCheckAll?**
+**Q: Do I need GCC?**
 
-> Only if your Go project uses **CGo** (calling C code from Go) or builds a **DLL / shared library**. Pure Go projects do not need GCC.
+> Only if your Go project uses **CGo** (calling C code from Go) or builds a **DLL**.  
+> Pure Go projects do not need GCC at all.
 
 **Q: Can I use GoCheckAll in CI/CD pipelines?**
 
@@ -545,20 +568,24 @@ go install honnef.co/go/tools/cmd/staticcheck@latest
 > - `exit 0` → all projects passed ✅
 > - `exit 1` → at least one project has errors ❌
 
-**Q: Where is the detailed log file saved?**
+**Q: Where is the detailed log file?**
 
-> `%TEMP%\GoMultiProject.log` — it opens automatically when errors are found. On most Windows machines this is `C:\Users\YourName\AppData\Local\Temp\`.
-
-**Q: How do I check only one specific project?**
-
-> Pass the project path directly with thread count 1:
-> ```bash
-> GoCheckAll.exe D:\GoProjects\myproject 1
-> ```
+> It is saved at `%TEMP%\GoMultiProject.log` and opens automatically when errors are found.  
+> On most Windows machines: `C:\Users\YourName\AppData\Local\Temp\GoMultiProject.log`
 
 **Q: GoCheckAll found 0 projects — why?**
 
-> Make sure the target directory (or its direct sub-folders) contains a `go.mod` file. GoCheckAll scans only one level deep. If your `go.mod` is nested deeper, pass the exact folder as argument.
+> Make sure you opened the **workspace root** in VS Code — the folder that  
+> *contains* your Go project sub-folders, not a project folder itself.  
+> Each project sub-folder must have a `go.mod` file.
+
+**Q: How do I check only one specific project?**
+
+> In `tasks.json`, the second task `"GoCheckAll — Check current folder only"`  
+> checks only the folder you have open. Or from Command Prompt:
+> ```bash
+> GoCheckAll.exe D:\GoProjects\myproject 1
+> ```
 
 ---
 
@@ -586,7 +613,7 @@ Contributions are welcome:
 
 1. Fork this repo
 2. Create a branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m "Add: your feature description"`
+3. Commit: `git commit -m "Add: your feature description"`
 4. Push: `git push origin feature/your-feature`
 5. Open a Pull Request
 
